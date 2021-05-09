@@ -1,7 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
 #include "Shader.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+#include <iostream>
 
 /* Resize OpenGL viewport when window size changes */
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -59,15 +62,18 @@ unsigned int createVAO() {
 
 void createVBO(float* vertices, int byteSize, int vertexLen) {
 	unsigned int VBO;
-	glGenBuffers(1, &VBO);															// Generate Vertex Buffer Object
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);												// Bind the Array Buffer to use the VBO
+	glGenBuffers(1, &VBO);													// Generate Vertex Buffer Object
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);										// Bind the Array Buffer to use the VBO
 	glBufferData(GL_ARRAY_BUFFER, byteSize, vertices, GL_STATIC_DRAW);		// Copy the Vertices Array to the bound Array Buffer
-	// Position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void*)0);	// Tell OpenGL how to read the vertex attributes
-	glEnableVertexAttribArray(0);														// Activate the vertex attribute location 0
-	// Color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void*)(3 * sizeof(float)));	// Tell OpenGL how to read the vertex attributes
-	glEnableVertexAttribArray(1);																		// Activate the vertex attribute location 1
+	// Read position vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);		// Activate the vertex attribute location 0
+	// Read color vertex attributes
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);		// Activate the vertex attribute location 1
+	// Read texture vertex attributes
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);		// Activate the vertex attribute location 1
 }
 
 void createEBO(unsigned int* indices, int byteSize) {
@@ -77,9 +83,45 @@ void createEBO(unsigned int* indices, int byteSize) {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, byteSize, indices, GL_STATIC_DRAW);		// Set the EBO data to be indices
 }
 
+unsigned int createTexture(const char* path) {
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	// Texture wrapping mode for each axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// Texture scaling mode with mipmaps
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Load image
+	int tWidth, tHeight, nrChannels;
+	unsigned char* data = stbi_load(path, &tWidth, &tHeight, &nrChannels, 0);
+	// Create texture
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tWidth, tHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);	// Generate texture from data
+		glGenerateMipmap(GL_TEXTURE_2D);	// Generate mipmaps
+	}
+	else std::cout << "Failed to load texture!" << std::endl;
+	stbi_image_free(data);					// Free image memory
+
+	return texture;
+}
+
+void calcFPS(int& nbFrames, double& lastTime) {
+	double currentTime = glfwGetTime();
+	nbFrames++;
+	if (currentTime - lastTime >= 1.0) { // If last prinf() was more than 1 sec ago
+		// printf and reset timer
+		printf("%f fps\n", 1000.0 / (1000.0 / double(nbFrames)));
+		printf("%f ms/frame\n", 1000.0 / double(nbFrames));
+		nbFrames = 0;
+		lastTime += 1.0;
+	}
+}
+
 int main() {
-	int width = 800;
-	int height = 600;
+	int width = 1080;
+	int height = 720;
 
 	// Create window
 	GLFWwindow* window = initWindow(width, height);
@@ -95,10 +137,12 @@ int main() {
 
 
 	float triangle[] = {
-		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-		 0.0f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-		 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+		// Position			// Color		  // Texture
+		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,	// Bottom left
+		 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,	// Bottom right
+		 0.0f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f	// Top
 	};
+	unsigned int texture = createTexture("image.png");
 
 	float triangle1[] = {
 		-1.0f, -0.5f, 0.0f,
@@ -124,7 +168,7 @@ int main() {
 	};
 
 	unsigned int VAO = createVAO();
-	createVBO(triangle, sizeof(triangle), 6);
+	createVBO(triangle, sizeof(triangle), 8);
 
 	unsigned int VAO1 = createVAO();
 	createVBO(triangle1, sizeof(triangle1), 3);
@@ -145,15 +189,8 @@ int main() {
 	do {
 
 		// Measure speed
-		double currentTime = glfwGetTime();
 		nbFrames++;
-		if (currentTime - lastTime >= 1.0) { // If last prinf() was more than 1 sec ago
-			// printf and reset timer
-			printf("%f fps\n", 1000.0 / (1000.0 / double(nbFrames)));
-			printf("%f ms/frame\n", 1000.0 / double(nbFrames));
-			nbFrames = 0;
-			lastTime += 1.0;
-		}
+		calcFPS(nbFrames, lastTime);
 
 		// Clear previous buffer
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -183,8 +220,10 @@ int main() {
 
 		shader2.use();
 		shader2.setFloat3("offset", posValue, 0.0f, 0.0f);
+		glBindTexture(GL_TEXTURE_2D, texture);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindTexture(GL_TEXTURE_2D, 0);	// Unbind texture
 
 		// Call events and swap buffers
 		glfwPollEvents();
