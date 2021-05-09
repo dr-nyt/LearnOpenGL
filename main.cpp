@@ -32,7 +32,7 @@ GLFWwindow* initWindow(int& width, int& height) {
 		return window;
 	}
 	glfwMakeContextCurrent(window);		// Make the window the main context on this thread
-
+	glfwSwapInterval(0);				// Uncap fps
 
 	// Initialize GLAD
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -57,26 +57,24 @@ unsigned int createVAO() {
 	return VAO;
 }
 
-template<size_t N>
-void createVBO(float(&vertices)[N], int size) {
+void createVBO(float* vertices, int byteSize, int vertexLen) {
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);															// Generate Vertex Buffer Object
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);												// Bind the Array Buffer to use the VBO
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);		// Copy the Vertices Array to the bound Array Buffer
+	glBufferData(GL_ARRAY_BUFFER, byteSize, vertices, GL_STATIC_DRAW);		// Copy the Vertices Array to the bound Array Buffer
 	// Position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, size * sizeof(float), (void*)0);	// Tell OpenGL how to read the vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void*)0);	// Tell OpenGL how to read the vertex attributes
 	glEnableVertexAttribArray(0);														// Activate the vertex attribute location 0
 	// Color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, size * sizeof(float), (void*)(3 * sizeof(float)));	// Tell OpenGL how to read the vertex attributes
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void*)(3 * sizeof(float)));	// Tell OpenGL how to read the vertex attributes
 	glEnableVertexAttribArray(1);																		// Activate the vertex attribute location 1
 }
 
-template<size_t N>
-void createEBO(unsigned int(&indices)[N]) {
+void createEBO(unsigned int* indices, int byteSize) {
 	unsigned int EBO;
 	glGenBuffers(1, &EBO);																	// Generate Element Buffer Object
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);												// Bind the EBO
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);		// Set the EBO data to be indices
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, byteSize, indices, GL_STATIC_DRAW);		// Set the EBO data to be indices
 }
 
 int main() {
@@ -126,22 +124,37 @@ int main() {
 	};
 
 	unsigned int VAO = createVAO();
-	createVBO<18>(triangle, 6);
+	createVBO(triangle, sizeof(triangle), 6);
 
 	unsigned int VAO1 = createVAO();
-	createVBO<9>(triangle1, 3);
+	createVBO(triangle1, sizeof(triangle1), 3);
 
 	unsigned int VAO2 = createVAO();
-	createVBO<9>(triangle2, 3);
+	createVBO(triangle2, sizeof(triangle2), 3);
 
 	unsigned int VAO4 = createVAO();
-	createVBO<12>(rectangle, 3);
-	createEBO(indices);
+	createVBO(rectangle, sizeof(rectangle), 3);
+	createEBO(indices, sizeof(indices));
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);		// Wireframe mode
 
 	// Render loop
-	while (!glfwWindowShouldClose(window)) {
+		// FPS
+	double lastTime = glfwGetTime();
+	int nbFrames = 0;
+	do {
+
+		// Measure speed
+		double currentTime = glfwGetTime();
+		nbFrames++;
+		if (currentTime - lastTime >= 1.0) { // If last prinf() was more than 1 sec ago
+			// printf and reset timer
+			printf("%f fps\n", 1000.0 / (1000.0 / double(nbFrames)));
+			printf("%f ms/frame\n", 1000.0 / double(nbFrames));
+			nbFrames = 0;
+			lastTime += 1.0;
+		}
+
 		// Clear previous buffer
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -152,6 +165,7 @@ int main() {
 		// Update shader
 		float timeValue = glfwGetTime();
 		float colorValue = (sin(timeValue) / 2.0f) + 0.5f;
+		float posValue = sin(timeValue);
 
 		// Render
 		shader1.use();
@@ -168,13 +182,14 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		shader2.use();
+		shader2.setFloat3("offset", posValue, 0.0f, 0.0f);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		// Call events and swap buffers
 		glfwPollEvents();
 		glfwSwapBuffers(window);
-	}
+	} while (!glfwWindowShouldClose(window));
 
 	glfwTerminate();
 	return 0;
