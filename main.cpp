@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "Shader.h"
+#include "camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,12 +26,18 @@ void createEBO(unsigned int* indices, int byteSize);
 unsigned int createTexture(const char* path);
 void calcFPS(int& nbFrames, double& lastTime);
 
+int width = 1080;
+int height = 720;
+
 float mixValue = 0.5f;
 float fov = 45.0f;
 
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+Camera camera = Camera(width, height);
+
 int main() {
-	int width = 1080;
-	int height = 720;
 
 	// Create window
 	GLFWwindow* window = initWindow(width, height);
@@ -56,6 +63,7 @@ int main() {
 		0, 1, 2,
 		2, 3, 0
 	};
+
 	unsigned int texture1 = createTexture("image.png");
 	unsigned int texture2 = createTexture("pattern.jpg");
 	shader2.use();
@@ -173,21 +181,16 @@ int main() {
 	model = glm::translate(model, glm::vec3(0.5f, -0.5f, 0.0f));
 	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	// View Matrix
-	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
 	// Perspective projection
-	glm::mat4 projection;
-
-	shader2.use();
-	shader2.setMat4("view", glm::value_ptr(view));
 
 	// Render loop
 		// FPS
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 	do {
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 
 		// Measure speed
 		nbFrames++;
@@ -226,8 +229,13 @@ int main() {
 		//glBindVertexArray(VAO);
 		glBindVertexArray(VAO4);
 		shader2.use();
-		projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.1f, 100.0f);
+
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)width / (float)height, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+
 		shader2.setMat4("projection", glm::value_ptr(projection));
+		shader2.setMat4("view", glm::value_ptr(view));
+
 		shader2.setFloat3("offset", posValue, 0.0f, 0.0f);
 		shader2.setFloat("mixValue", mixValue);
 		// Bind textures
@@ -276,13 +284,28 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 		if (mixValue > 0.0f) mixValue -= 0.01f;
 	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+	}
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-	fov += yoffset * -2;
-	if (fov < 30.0f) fov = 30.0f;
-	else if (fov > 120.0f) fov = 120.0f;
+void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
+	camera.ProcessMouseMovement(xPos, yPos);
 }
+
+void scroll_callback(GLFWwindow* window, double xOffset, double yOffset) {
+	camera.ProcessMouseScroll(yOffset);
+}
+
 
 /* Init GLFW, create window, init GLAD, set OpenGL viewport */
 GLFWwindow* initWindow(int& width, int& height) {
@@ -313,6 +336,8 @@ GLFWwindow* initWindow(int& width, int& height) {
 	// Setup Viewport
 	glViewport(0, 0, width, height);										// Set OpenGL viewport size
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);		// Set OpenGL to call function to resize the viewport
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
 	glEnable(GL_DEPTH_TEST);			// Enable depth test using z-index
 
 	glfwSetScrollCallback(window, scroll_callback);
