@@ -12,7 +12,9 @@ enum Camera_Movement {
 	FORWARD,
 	BACKWARD,
 	LEFT,
-	RIGHT
+	RIGHT,
+	UP,
+	DOWN
 };
 
 // Default camera values
@@ -40,6 +42,7 @@ public:
 	float Pitch;
 	// camera options
 	float MovementSpeed;
+	bool boost;
 	float MouseSensitivity;
 	float Zoom;
 
@@ -48,21 +51,22 @@ public:
 	{
 		Position = position;
 		WorldUp = up;
-		lastX = width / 2;
-		lastY = height / 2;
-		Yaw = yaw;
-		Pitch = pitch;
-		updateCameraVectors();
+		init(width, height, yaw, pitch);
 	}
 	// constructor with scalar values
 	Camera(int width, int height, float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 	{
 		Position = glm::vec3(posX, posY, posZ);
 		WorldUp = glm::vec3(upX, upY, upZ);
+		init(width, height, yaw, pitch);
+	}
+
+	void init(int width, int height, float yaw, float pitch) {
 		lastX = width / 2;
 		lastY = height / 2;
 		Yaw = yaw;
 		Pitch = pitch;
+		boost = false;
 		updateCameraVectors();
 	}
 
@@ -78,15 +82,19 @@ public:
 		glm::vec3 forward = Front;
 		//glm::vec3 forward = glm::vec3(cos(glm::radians(Yaw)), 0.0f, sin(glm::radians(Yaw)));
 		forward = glm::normalize(forward);
-		float velocity = MovementSpeed * deltaTime;
+		float velocity = ((boost ? 2.0f : 1.0f) * MovementSpeed) * deltaTime;
 		if (direction == FORWARD)
 			Position += forward * velocity;
-		if (direction == BACKWARD)
+		else if (direction == BACKWARD)
 			Position -= forward * velocity;
-		if (direction == LEFT)
+		else if (direction == LEFT)
 			Position -= Right * velocity;
-		if (direction == RIGHT)
+		else if (direction == RIGHT)
 			Position += Right * velocity;
+		else if (direction == UP)
+			Position += glm::vec3(0.0f, 1.0f, 0.0f) * velocity;
+		else if (direction == DOWN)
+			Position -= glm::vec3(0.0f, 1.0f, 0.0f) * velocity;
 	}
 
 	// processes input received from a mouse input system. Expects the offset value in both the x and y direction.

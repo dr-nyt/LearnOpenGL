@@ -1,14 +1,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "Shader.h"
-#include "camera.h"
+#include "headers/Shader.h"
+#include "headers/camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "headers/stb_image.h"
 
 #include <iostream>
 
@@ -46,10 +46,10 @@ int main() {
 	if (window == NULL) return -1;
 
 	// Create shader program
-	Shader shader1("vertex_shader_1.vs", "fragment_shader_1.fs");
-	Shader shader2("vertex_shader_2.vs", "fragment_shader_2.fs");
-	Shader lightingShader("lighting.vs", "lighting.fs");
-	Shader lightShader("lighting.vs", "light.fs");
+	Shader shader1("shaders/vertex_shader_1.vs", "shaders/fragment_shader_1.fs");
+	Shader shader2("shaders/vertex_shader_2.vs", "shaders/fragment_shader_2.fs");
+	Shader lightingShader("shaders/lighting.vs", "shaders/lighting.fs");
+	Shader lightShader("shaders/lighting.vs", "shaders/light.fs");
 
 	// Total system attributes
 	int nrAttributes;
@@ -68,8 +68,8 @@ int main() {
 		2, 3, 0
 	};
 
-	unsigned int texture1 = createTexture("image.png");
-	unsigned int texture2 = createTexture("pattern.jpg");
+	unsigned int texture1 = createTexture("rsc/imgs/image.png");
+	unsigned int texture2 = createTexture("rsc/imgs/pattern.jpg");
 	shader2.use();
 	shader2.setInt("texture1", 0);
 	shader2.setInt("texture2", 1);
@@ -316,6 +316,18 @@ void processInput(GLFWwindow* window) {
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		camera.ProcessKeyboard(RIGHT, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		camera.ProcessKeyboard(UP, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		camera.ProcessKeyboard(DOWN, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		camera.boost = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
+		camera.boost = false;
 	}
 }
 

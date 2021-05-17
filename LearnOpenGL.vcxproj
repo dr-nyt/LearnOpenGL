@@ -145,26 +145,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="glad.c" />
+    <ClCompile Include="headers\glad.c" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="headers\camera.h" />
+    <ClInclude Include="headers\Shader.h" />
+    <ClInclude Include="headers\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment_shader_1.fs" />
-    <None Include="fragment_shader_2.fs" />
-    <None Include="light.fs" />
-    <None Include="lighting.fs" />
-    <None Include="lighting.vs" />
-    <None Include="vertex_shader_1.vs" />
-    <None Include="vertex_shader_2.vs" />
+    <None Include="shaders\fragment_shader_1.fs" />
+    <None Include="shaders\fragment_shader_2.fs" />
+    <None Include="shaders\light.fs" />
+    <None Include="shaders\lighting.fs" />
+    <None Include="shaders\lighting.vs" />
+    <None Include="shaders\vertex_shader_1.vs" />
+    <None Include="shaders\vertex_shader_2.vs" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="image.png" />
-    <Image Include="pattern.jpg" />
+    <Image Include="rsc\imgs\image.png" />
+    <Image Include="rsc\imgs\pattern.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
