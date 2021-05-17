@@ -156,6 +156,9 @@
   <ItemGroup>
     <None Include="fragment_shader_1.fs" />
     <None Include="fragment_shader_2.fs" />
+    <None Include="light.fs" />
+    <None Include="lighting.fs" />
+    <None Include="lighting.vs" />
     <None Include="vertex_shader_1.vs" />
     <None Include="vertex_shader_2.vs" />
   </ItemGroup>

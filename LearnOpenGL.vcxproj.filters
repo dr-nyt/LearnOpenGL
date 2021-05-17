@@ -46,6 +46,15 @@
     <None Include="fragment_shader_2.fs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="lighting.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="lighting.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="light.fs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="image.png">

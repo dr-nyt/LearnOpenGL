@@ -75,8 +75,8 @@ public:
 	// processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	{
-		//glm::vec3 forward = Front;
-		glm::vec3 forward = glm::vec3(cos(glm::radians(Yaw)), 0.0f, sin(glm::radians(Yaw)));
+		glm::vec3 forward = Front;
+		//glm::vec3 forward = glm::vec3(cos(glm::radians(Yaw)), 0.0f, sin(glm::radians(Yaw)));
 		forward = glm::normalize(forward);
 		float velocity = MovementSpeed * deltaTime;
 		if (direction == FORWARD)

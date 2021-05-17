@@ -37,6 +37,8 @@ float lastFrame = 0.0f;
 
 Camera camera = Camera(width, height);
 
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);	// Light source position
+
 int main() {
 
 	// Create window
@@ -46,6 +48,8 @@ int main() {
 	// Create shader program
 	Shader shader1("vertex_shader_1.vs", "fragment_shader_1.fs");
 	Shader shader2("vertex_shader_2.vs", "fragment_shader_2.fs");
+	Shader lightingShader("lighting.vs", "lighting.fs");
+	Shader lightShader("lighting.vs", "light.fs");
 
 	// Total system attributes
 	int nrAttributes;
@@ -174,14 +178,19 @@ int main() {
 	addVertexAttrib(0, 3, 5, 0);
 	addVertexAttrib(2, 2, 5, 3);
 
+	unsigned int lightVAO = createVAO();
+	createVBO(cube, sizeof(cube), 5);
+	addVertexAttrib(0, 3, 5, 0);
+	addVertexAttrib(1, 2, 5, 3);
+
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);		// Wireframe mode
 
 	// Model matrix
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.5f, -0.5f, 0.0f));
-	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 lightModel = glm::mat4(1.0f);
+	lightModel = glm::translate(lightModel, lightPos);
+	lightModel = glm::scale(lightModel, glm::vec3(0.2f));
 
-	// Perspective projection
+	glm::mat4 model = glm::mat4(1.0f);
 
 	// Render loop
 		// FPS
@@ -208,6 +217,10 @@ int main() {
 		float colorValue = (sin(timeValue) / 2.0f) + 0.5f;
 		float posValue = sin(timeValue);
 
+		// Camera
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)width / (float)height, 0.1f, 100.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+
 		// Render
 		//shader1.use();
 		//// Draw rectangle
@@ -227,37 +240,45 @@ int main() {
 
 		// Draw square
 		//glBindVertexArray(VAO);
+		//glBindVertexArray(VAO4);
+		//shader2.use();
+		//shader2.setMat4("projection", glm::value_ptr(projection));
+		//shader2.setMat4("view", glm::value_ptr(view));
+
+		//shader2.setFloat3("offset", posValue, 0.0f, 0.0f);
+		//shader2.setFloat("mixValue", mixValue);
+		//// Bind textures
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, texture1);
+		//glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, texture2);
+
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//// Unbind texture
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, 0);
+		//glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, 0);
+
+		// Light
+		glBindVertexArray(lightVAO);
+		lightShader.use();
+		lightShader.setMat4("model", glm::value_ptr(lightModel));
+		lightShader.setMat4("view", glm::value_ptr(view));
+		lightShader.setMat4("projection", glm::value_ptr(projection));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Object
 		glBindVertexArray(VAO4);
-		shader2.use();
+		lightingShader.use();
+		lightingShader.setFloat3("objectColor", 1.0f, 0.5f, 0.31f);
+		lightingShader.setFloat3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightingShader.setMat4("model", glm::value_ptr(model));
+		lightingShader.setMat4("view", glm::value_ptr(view));
+		lightingShader.setMat4("projection", glm::value_ptr(projection));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)width / (float)height, 0.1f, 100.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-
-		shader2.setMat4("projection", glm::value_ptr(projection));
-		shader2.setMat4("view", glm::value_ptr(view));
-
-		shader2.setFloat3("offset", posValue, 0.0f, 0.0f);
-		shader2.setFloat("mixValue", mixValue);
-		// Bind textures
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
-
-		for (unsigned int i = 0; i < 10; i++) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i % 10]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle) * timeValue, glm::vec3(1.0f, 0.3f, 0.5f));
-			shader2.setMat4("model", glm::value_ptr(model));
-			//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);						// Draw based on indices
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		// Unbind texture
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// Call events and swap buffers
 		glfwPollEvents();
