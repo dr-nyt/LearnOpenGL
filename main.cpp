@@ -13,17 +13,17 @@
 #include <iostream>
 
 // Window
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window);
-GLFWwindow *initWindow(int &width, int &height);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+GLFWwindow* initWindow(int& width, int& height);
 
 // OpenGL
 unsigned int createVAO();
-void createVBO(float *vertices, int byteSize, int vertexLen);
+void createVBO(float* vertices, int byteSize, int vertexLen);
 void addVertexAttrib(int location, int attribLen, int vertexLen, int offset);
-void createEBO(unsigned int *indices, int byteSize);
-unsigned int createTexture(const char *path);
-void calcFPS(int &nbFrames, double &lastTime);
+void createEBO(unsigned int* indices, int byteSize);
+unsigned int createTexture(const char* path);
+void calcFPS(int& nbFrames, double& lastTime);
 
 // Global Variables
 int width = 1080;
@@ -37,13 +37,14 @@ float lastFrame = 0.0f;
 
 Camera camera = Camera(width, height);
 
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f); // Light source position
+glm::vec3 lightOffset(0.0f, 2.0f, 0.0f);
+glm::vec3 lightPos; // Light source position
 
 int main()
 {
 
 	// Create window
-	GLFWwindow *window = initWindow(width, height);
+	GLFWwindow* window = initWindow(width, height);
 	if (window == NULL)
 		return -1;
 
@@ -67,59 +68,64 @@ int main()
 
 	// Cube vertices
 	float cube[] = {
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+		// positions          // normals          // texture coords
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
 
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
 
-		-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-		-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
 
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-		0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-		0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
 
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-		0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f};
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f
+	};
+	int cubeVertexLen = 8;
 
 	// VAO & VBO for the object
 	unsigned int objectVAO = createVAO();
-	createVBO(cube, sizeof(cube), 5);
-	addVertexAttrib(0, 3, 5, 0); // Attribute 0 for the vertex coordinates
-	addVertexAttrib(1, 2, 5, 3); // Attribute 1 for the texture coordinates
+	createVBO(cube, sizeof(cube), cubeVertexLen);
+	addVertexAttrib(0, 3, cubeVertexLen, 0); // Attribute 0 for the vertex coordinates
+	addVertexAttrib(1, 3, cubeVertexLen, 3); // Attribute 1 for the normal vecotr
+	addVertexAttrib(2, 2, cubeVertexLen, 6); // Attribute 2 for the texture coordinates
 
 	// VAO & VBO for the light source
 	unsigned int lightVAO = createVAO();
-	createVBO(cube, sizeof(cube), 5);
-	addVertexAttrib(0, 3, 5, 0); // Attribute 0 for the vertex coordinates
-	addVertexAttrib(1, 2, 5, 3); // Attribute 1 for the texture coordinates
+	createVBO(cube, sizeof(cube), cubeVertexLen);
+	addVertexAttrib(0, 3, cubeVertexLen, 0); // Attribute 0 for the vertex coordinates
+	addVertexAttrib(1, 3, cubeVertexLen, 3); // Attribute 1 for the normal vecotr
+	addVertexAttrib(2, 2, cubeVertexLen, 6); // Attribute 2 for the texture coordinates
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);		// Wireframe mode
 
@@ -161,9 +167,17 @@ int main()
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)width / (float)height, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 
+		// Light movement
+		int radius = 3;
+		lightPos = glm::vec3(cos(timeValue) * radius, 0.0f, sin(timeValue) * radius);
+		//lightPos += lightOffset;
+
 		// Render Light
 		glBindVertexArray(lightVAO);
 		lightShader.use();
+		lightModel = glm::mat4(1.0f);
+		lightModel = glm::translate(lightModel, lightPos);
+		lightModel = glm::scale(lightModel, glm::vec3(0.2f));
 		lightShader.setMat4("model", glm::value_ptr(lightModel));
 		lightShader.setMat4("view", glm::value_ptr(view));
 		lightShader.setMat4("projection", glm::value_ptr(projection));
@@ -174,6 +188,8 @@ int main()
 		lightingShader.use();
 		lightingShader.setFloat3("objectColor", 1.0f, 0.5f, 0.31f);
 		lightingShader.setFloat3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3("lightPos", lightPos);
+		lightingShader.setVec3("ViewPos", camera.Position);
 		lightingShader.setMat4("model", glm::value_ptr(model));
 		lightingShader.setMat4("view", glm::value_ptr(view));
 		lightingShader.setMat4("projection", glm::value_ptr(projection));
@@ -190,13 +206,13 @@ int main()
 }
 
 /* Resize OpenGL viewport when window size changes */
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
 /* Handle inputs on the window */
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
@@ -247,19 +263,19 @@ void processInput(GLFWwindow *window)
 }
 
 /* Handles mouse input */
-void mouse_callback(GLFWwindow *window, double xPos, double yPos)
+void mouse_callback(GLFWwindow* window, double xPos, double yPos)
 {
 	camera.ProcessMouseMovement(xPos, yPos);
 }
 
 /* Handles scroll input */
-void scroll_callback(GLFWwindow *window, double xOffset, double yOffset)
+void scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
 {
 	camera.ProcessMouseScroll(yOffset);
 }
 
 /* Init GLFW, create window, init GLAD, set OpenGL viewport */
-GLFWwindow *initWindow(int &width, int &height)
+GLFWwindow* initWindow(int& width, int& height)
 {
 	// Initialize GLFW
 	glfwInit();
@@ -268,7 +284,7 @@ GLFWwindow *initWindow(int &width, int &height)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Set Modern OpenGL
 
 	// Create window object
-	GLFWwindow *window = glfwCreateWindow(width, height, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(width, height, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -309,7 +325,7 @@ unsigned int createVAO()
 }
 
 /* Create a VBO */
-void createVBO(float *vertices, int byteSize, int vertexLen)
+void createVBO(float* vertices, int byteSize, int vertexLen)
 {
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);											   // Generate Vertex Buffer Object
@@ -320,12 +336,12 @@ void createVBO(float *vertices, int byteSize, int vertexLen)
 /* Add a vertex attribute to a VBO for shaders to use */
 void addVertexAttrib(int location, int attribLen, int vertexLen, int offset)
 {
-	glVertexAttribPointer(location, attribLen, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void *)(offset * (sizeof(float))));
+	glVertexAttribPointer(location, attribLen, GL_FLOAT, GL_FALSE, vertexLen * sizeof(float), (void*)(offset * (sizeof(float))));
 	glEnableVertexAttribArray(location);
 }
 
 /* Create EBO for indices */
-void createEBO(unsigned int *indices, int byteSize)
+void createEBO(unsigned int* indices, int byteSize)
 {
 	unsigned int EBO;
 	glGenBuffers(1, &EBO);													  // Generate Element Buffer Object
@@ -334,7 +350,7 @@ void createEBO(unsigned int *indices, int byteSize)
 }
 
 /* Create a texture from given path */
-unsigned int createTexture(const char *path)
+unsigned int createTexture(const char* path)
 {
 	unsigned int texture;
 	glGenTextures(1, &texture);
@@ -348,7 +364,7 @@ unsigned int createTexture(const char *path)
 	// Load image
 	int tWidth, tHeight, nrChannels;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char *data = stbi_load(path, &tWidth, &tHeight, &nrChannels, 0);
+	unsigned char* data = stbi_load(path, &tWidth, &tHeight, &nrChannels, 0);
 	// Create texture
 	if (data)
 	{
@@ -363,7 +379,7 @@ unsigned int createTexture(const char *path)
 }
 
 /* Calculate and log fps to the console */
-void calcFPS(int &nbFrames, double &lastTime)
+void calcFPS(int& nbFrames, double& lastTime)
 {
 	double currentTime = glfwGetTime();
 	nbFrames++;
