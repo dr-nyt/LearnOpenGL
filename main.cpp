@@ -155,7 +155,8 @@ int main()
 
 		// Clear previous color and depth buffer
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearStencil(0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		// Handle input
 		processInput(window);
@@ -207,11 +208,7 @@ int main()
 		lightingShader.setMat3("tiModel", glm::value_ptr(tiModel));
 		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glClearStencil(0);
-		glClear(GL_STENCIL_BUFFER_BIT);
-
 		// Render the mesh into the stencil buffer.
-
 		glEnable(GL_STENCIL_TEST);
 
 		glStencilFunc(GL_ALWAYS, 1, -1);
@@ -220,7 +217,6 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Render the thick wireframe version.
-
 		glStencilFunc(GL_NOTEQUAL, 1, -1);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
