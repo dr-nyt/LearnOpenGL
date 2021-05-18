@@ -37,8 +37,9 @@ float lastFrame = 0.0f;
 
 Camera camera = Camera(width, height);
 
-glm::vec3 lightOffset(0.0f, 2.0f, 0.0f);
-glm::vec3 lightPos; // Light source position
+glm::vec3 lightOffset(2.0f, 2.0f, 2.0f);
+glm::vec3 lightPos(0.0f, 0.0f, 4.0f);					// Light source position
+glm::vec3 lightColor(1.0f);
 
 int main()
 {
@@ -136,6 +137,7 @@ int main()
 
 	// Object mode matrix
 	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 wireModel = glm::scale(model, glm::vec3(1.05f));
 
 	// Render loop
 	double lastTime = glfwGetTime();
@@ -169,31 +171,67 @@ int main()
 
 		// Light movement
 		int radius = 3;
-		lightPos = glm::vec3(cos(timeValue) * radius, 0.0f, sin(timeValue) * radius);
+		//lightPos = glm::vec3(cos(timeValue) * radius, 0.0f, sin(timeValue) * radius);
 		//lightPos += lightOffset;
+		//lightColor = glm::vec3(cos(colorValue), cos(colorValue), sin(colorValue));
 
 		// Render Light
 		glBindVertexArray(lightVAO);
 		lightShader.use();
+
 		lightModel = glm::mat4(1.0f);
 		lightModel = glm::translate(lightModel, lightPos);
 		lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+		glm::mat3 tiLightModel = glm::transpose(glm::inverse(lightModel));
+
+		lightShader.setVec3("lightColor", lightColor);
 		lightShader.setMat4("model", glm::value_ptr(lightModel));
 		lightShader.setMat4("view", glm::value_ptr(view));
 		lightShader.setMat4("projection", glm::value_ptr(projection));
+		lightShader.setMat3("tiModel", glm::value_ptr(tiLightModel));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Render Object
 		glBindVertexArray(objectVAO);
 		lightingShader.use();
+
+		glm::mat3 tiModel = glm::transpose(glm::inverse(lightModel));
+
 		lightingShader.setFloat3("objectColor", 1.0f, 0.5f, 0.31f);
-		lightingShader.setFloat3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3("lightColor", lightColor);
 		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("ViewPos", camera.Position);
 		lightingShader.setMat4("model", glm::value_ptr(model));
 		lightingShader.setMat4("view", glm::value_ptr(view));
 		lightingShader.setMat4("projection", glm::value_ptr(projection));
+		lightingShader.setMat3("tiModel", glm::value_ptr(tiModel));
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glClearStencil(0);
+		glClear(GL_STENCIL_BUFFER_BIT);
+
+		// Render the mesh into the stencil buffer.
+
+		glEnable(GL_STENCIL_TEST);
+
+		glStencilFunc(GL_ALWAYS, 1, -1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Render the thick wireframe version.
+
+		glStencilFunc(GL_NOTEQUAL, 1, -1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+		glLineWidth(3);
+		glPolygonMode(GL_FRONT, GL_LINE);
+
+		lightShader.use();
+		lightShader.setFloat3("lightColor", 1.0f, 0.0f, 0.0f);
+		lightShader.setMat4("model", glm::value_ptr(wireModel));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 		// Call events and swap buffers
 		glfwPollEvents();
