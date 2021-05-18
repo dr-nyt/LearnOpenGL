@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="headers\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="headers\glad.c">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,5 +63,8 @@
     <Image Include="rsc\imgs\pattern.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="src\chap1.txt" />
   </ItemGroup>
 </Project>

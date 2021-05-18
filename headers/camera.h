@@ -29,7 +29,7 @@ const float ZOOM = 45.0f;
 class Camera
 {
 public:
-	// camera Attributes
+	// Camera Attributes
 	glm::vec3 Position;
 	glm::vec3 Front;
 	glm::vec3 Up;
@@ -46,14 +46,15 @@ public:
 	float MouseSensitivity;
 	float Zoom;
 
-	// constructor with vectors
+	// Constructor with vectors
 	Camera(int width, int height, glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 	{
 		Position = position;
 		WorldUp = up;
 		init(width, height, yaw, pitch);
 	}
-	// constructor with scalar values
+
+	// Constructor with scalar values
 	Camera(int width, int height, float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 	{
 		Position = glm::vec3(posX, posY, posZ);
@@ -70,17 +71,17 @@ public:
 		updateCameraVectors();
 	}
 
-	// returns the view matrix calculated using Euler Angles and the LookAt Matrix
+	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
 	glm::mat4 GetViewMatrix()
 	{
 		return glm::lookAt(Position, Position + Front, Up);
 	}
 
-	// processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
+	// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	{
-		glm::vec3 forward = Front;
-		//glm::vec3 forward = glm::vec3(cos(glm::radians(Yaw)), 0.0f, sin(glm::radians(Yaw)));
+		//glm::vec3 forward = Front;
+		glm::vec3 forward = glm::vec3(cos(glm::radians(Yaw)), 0.0f, sin(glm::radians(Yaw)));
 		forward = glm::normalize(forward);
 		float velocity = ((boost ? 2.0f : 1.0f) * MovementSpeed) * deltaTime;
 		if (direction == FORWARD)
@@ -97,7 +98,7 @@ public:
 			Position -= glm::vec3(0.0f, 1.0f, 0.0f) * velocity;
 	}
 
-	// processes input received from a mouse input system. Expects the offset value in both the x and y direction.
+	// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 	void ProcessMouseMovement(float xPos, float yPos, GLboolean constrainPitch = true)
 	{
 		float xoffset = xPos - lastX;
@@ -124,7 +125,7 @@ public:
 		updateCameraVectors();
 	}
 
-	// processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
+	// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 	void ProcessMouseScroll(float yoffset)
 	{
 		Zoom -= (float)yoffset;
@@ -135,7 +136,7 @@ public:
 	}
 
 private:
-	// calculates the front vector from the Camera's (updated) Euler Angles
+	// Calculates the front vector from the Camera's (updated) Euler Angles
 	void updateCameraVectors()
 	{
 		// calculate the new Front vector

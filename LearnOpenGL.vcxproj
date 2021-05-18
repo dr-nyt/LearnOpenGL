@@ -166,6 +166,9 @@
     <Image Include="rsc\imgs\image.png" />
     <Image Include="rsc\imgs\pattern.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="src\chap1.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
