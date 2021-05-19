@@ -37,13 +37,12 @@ float lastFrame = 0.0f;
 
 Camera camera = Camera(width, height);
 
-glm::vec3 lightOffset(2.0f, 2.0f, 2.0f);
+glm::vec3 lightOffset(0.0f, 0.0f, 0.0f);
 glm::vec3 lightPos(0.0f, 0.0f, 4.0f);					// Light source position
 glm::vec3 lightColor(1.0f);
 
 int main()
 {
-
 	// Create window
 	GLFWwindow* window = initWindow(width, height);
 	if (window == NULL)
@@ -69,64 +68,62 @@ int main()
 
 	// Cube vertices
 	float cube[] = {
-		// positions          // normals          // texture coords
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 	};
-	int cubeVertexLen = 8;
+	int cubeVertexLen = 6;
+	int cubeVertexCount = (sizeof(cube) / sizeof(*cube)) / cubeVertexLen;
 
 	// VAO & VBO for the object
 	unsigned int objectVAO = createVAO();
 	createVBO(cube, sizeof(cube), cubeVertexLen);
 	addVertexAttrib(0, 3, cubeVertexLen, 0); // Attribute 0 for the vertex coordinates
 	addVertexAttrib(1, 3, cubeVertexLen, 3); // Attribute 1 for the normal vecotr
-	addVertexAttrib(2, 2, cubeVertexLen, 6); // Attribute 2 for the texture coordinates
 
 	// VAO & VBO for the light source
 	unsigned int lightVAO = createVAO();
 	createVBO(cube, sizeof(cube), cubeVertexLen);
 	addVertexAttrib(0, 3, cubeVertexLen, 0); // Attribute 0 for the vertex coordinates
 	addVertexAttrib(1, 3, cubeVertexLen, 3); // Attribute 1 for the normal vecotr
-	addVertexAttrib(2, 2, cubeVertexLen, 6); // Attribute 2 for the texture coordinates
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);		// Wireframe mode
 
@@ -138,6 +135,28 @@ int main()
 	// Object mode matrix
 	glm::mat4 model = glm::mat4(1.0f);
 	glm::mat4 wireModel = glm::scale(model, glm::vec3(1.05f));
+
+	// Materials
+	Material ruby = {
+		glm::vec3(0.1745f, 0.01175f, 0.01175f),
+		glm::vec3(0.61424f, 0.04136f, 0.04136f),
+		glm::vec3(0.727811f, 0.626959f, 0.626959f),
+		32.0f
+	};
+
+	Material gold = {
+		glm::vec3(0.24725f, 0.1995f, 0.0745f),
+		glm::vec3(0.75164f, 0.60648f, 0.22648f),
+		glm::vec3(0.628281f, 0.555802f, 0.366065f),
+		128.0 * 0.4
+	};
+
+	Material mat = {
+		glm::vec3(1.0f, 0.5f, 0.31f),
+		glm::vec3(1.0f, 0.5f, 0.31f),
+		glm::vec3(0.5f, 0.5f, 0.5f),
+		0.6f
+	};
 
 	// Render loop
 	double lastTime = glfwGetTime();
@@ -172,9 +191,11 @@ int main()
 
 		// Light movement
 		int radius = 3;
-		//lightPos = glm::vec3(cos(timeValue) * radius, 0.0f, sin(timeValue) * radius);
-		//lightPos += lightOffset;
-		//lightColor = glm::vec3(cos(colorValue), cos(colorValue), sin(colorValue));
+		lightPos = lightOffset;
+		lightPos += glm::vec3(cos(timeValue) * radius, 0.0f, sin(timeValue) * radius);
+		//lightColor = glm::vec3(cos(timeValue), 0.0f, sin(timeValue));
+		glm::vec3 diffuseColor = lightColor;
+		glm::vec3 ambientColor = lightColor;
 
 		// Render Light
 		glBindVertexArray(lightVAO);
@@ -190,7 +211,14 @@ int main()
 		lightShader.setMat4("view", glm::value_ptr(view));
 		lightShader.setMat4("projection", glm::value_ptr(projection));
 		lightShader.setMat3("tiModel", glm::value_ptr(tiLightModel));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, cubeVertexCount);
+
+		Light light = {
+			lightPos,
+			ambientColor,
+			diffuseColor,
+			lightColor,
+		};
 
 		// Render Object
 		glBindVertexArray(objectVAO);
@@ -198,35 +226,35 @@ int main()
 
 		glm::mat3 tiModel = glm::transpose(glm::inverse(lightModel));
 
-		lightingShader.setFloat3("objectColor", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3("lightColor", lightColor);
-		lightingShader.setVec3("lightPos", lightPos);
+		lightingShader.setMaterial(gold);
+		lightingShader.setLight(light);
 		lightingShader.setVec3("ViewPos", camera.Position);
+
 		lightingShader.setMat4("model", glm::value_ptr(model));
 		lightingShader.setMat4("view", glm::value_ptr(view));
 		lightingShader.setMat4("projection", glm::value_ptr(projection));
 		lightingShader.setMat3("tiModel", glm::value_ptr(tiModel));
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, cubeVertexCount);
 
 		// Render the mesh into the stencil buffer.
-		glEnable(GL_STENCIL_TEST);
+		//glEnable(GL_STENCIL_TEST);
 
-		glStencilFunc(GL_ALWAYS, 1, -1);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		//glStencilFunc(GL_ALWAYS, 1, -1);
+		//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawArrays(GL_TRIANGLES, 0, cubeVertexCount);
 
-		// Render the thick wireframe version.
-		glStencilFunc(GL_NOTEQUAL, 1, -1);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		//// Render the thick wireframe version.
+		//glStencilFunc(GL_NOTEQUAL, 1, -1);
+		//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-		glLineWidth(3);
-		glPolygonMode(GL_FRONT, GL_LINE);
+		//glLineWidth(3);
+		//glPolygonMode(GL_FRONT, GL_LINE);
 
-		lightShader.use();
-		lightShader.setFloat3("lightColor", 1.0f, 0.0f, 0.0f);
-		lightShader.setMat4("model", glm::value_ptr(wireModel));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//lightShader.use();
+		//lightShader.setFloat3("lightColor", 1.0f, 0.0f, 0.0f);
+		//lightShader.setMat4("model", glm::value_ptr(wireModel));
+		//glDrawArrays(GL_TRIANGLES, 0, cubeVertexCount);
 
 
 		// Call events and swap buffers

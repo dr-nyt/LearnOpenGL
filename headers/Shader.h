@@ -11,6 +11,21 @@
 #include <sstream>
 #include <iostream>
 
+struct Material {
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+	float shininess;
+};
+
+struct Light {
+	glm::vec3 position;
+
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+};
+
 class Shader {
 public:
 	unsigned int ID;	// Program ID
@@ -95,6 +110,20 @@ public:
 	// Use / Activate the shader
 	void use() {
 		glUseProgram(ID);
+	}
+
+	void setMaterial(Material material) {
+		setVec3("material.ambient", material.ambient);
+		setVec3("material.diffuse", material.diffuse);
+		setVec3("material.specular", material.specular);
+		setFloat("material.shininess", material.shininess);
+	}
+
+	void setLight(Light light) {
+		setVec3("light.position", light.position);
+		setVec3("light.ambient", light.ambient);
+		setVec3("light.diffuse", light.diffuse);
+		setVec3("light.specular", light.specular);
 	}
 
 	void setBool(const std::string& name, bool value) const {
