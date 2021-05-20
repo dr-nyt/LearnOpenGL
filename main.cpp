@@ -37,7 +37,7 @@ float lastFrame = 0.0f;
 
 Camera camera = Camera(width, height);
 
-glm::vec3 lightOffset(0.0f, 0.0f, 0.0f);
+glm::vec3 lightOffset(1.0f, 1.0f, 4.0f);
 glm::vec3 lightPos(0.0f, 0.0f, 4.0f);					// Light source position
 glm::vec3 lightColor(1.0f);
 
@@ -141,21 +141,21 @@ int main()
 		glm::vec3(0.1745f, 0.01175f, 0.01175f),
 		glm::vec3(0.61424f, 0.04136f, 0.04136f),
 		glm::vec3(0.727811f, 0.626959f, 0.626959f),
-		32.0f
+		0.6f
 	};
 
 	Material gold = {
 		glm::vec3(0.24725f, 0.1995f, 0.0745f),
 		glm::vec3(0.75164f, 0.60648f, 0.22648f),
 		glm::vec3(0.628281f, 0.555802f, 0.366065f),
-		128.0 * 0.4
+		0.4f
 	};
 
 	Material mat = {
 		glm::vec3(1.0f, 0.5f, 0.31f),
 		glm::vec3(1.0f, 0.5f, 0.31f),
 		glm::vec3(0.5f, 0.5f, 0.5f),
-		0.6f
+		0.25f
 	};
 
 	// Render loop
@@ -191,8 +191,8 @@ int main()
 
 		// Light movement
 		int radius = 3;
-		lightPos = lightOffset;
-		lightPos += glm::vec3(cos(timeValue) * radius, 0.0f, sin(timeValue) * radius);
+		//lightPos = lightOffset;
+		lightPos = glm::vec3(cos(timeValue) * radius, 0.0f, sin(timeValue) * radius);
 		//lightColor = glm::vec3(cos(timeValue), 0.0f, sin(timeValue));
 		glm::vec3 diffuseColor = lightColor;
 		glm::vec3 ambientColor = lightColor;
@@ -224,7 +224,8 @@ int main()
 		glBindVertexArray(objectVAO);
 		lightingShader.use();
 
-		glm::mat3 tiModel = glm::transpose(glm::inverse(lightModel));
+		model = glm::mat4(1.0f);
+		glm::mat3 tiModel = glm::transpose(glm::inverse(model));
 
 		lightingShader.setMaterial(gold);
 		lightingShader.setLight(light);
@@ -234,6 +235,20 @@ int main()
 		lightingShader.setMat4("view", glm::value_ptr(view));
 		lightingShader.setMat4("projection", glm::value_ptr(projection));
 		lightingShader.setMat3("tiModel", glm::value_ptr(tiModel));
+		glDrawArrays(GL_TRIANGLES, 0, cubeVertexCount);
+
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f));
+		tiModel = glm::transpose(glm::inverse(model));
+		lightingShader.setMat4("model", glm::value_ptr(model));
+		lightingShader.setMat3("tiModel", glm::value_ptr(tiModel));
+		lightingShader.setMaterial(ruby);
+		glDrawArrays(GL_TRIANGLES, 0, cubeVertexCount);
+
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		tiModel = glm::transpose(glm::inverse(model));
+		lightingShader.setMat4("model", glm::value_ptr(model));
+		lightingShader.setMat3("tiModel", glm::value_ptr(tiModel));
+		lightingShader.setMaterial(mat);
 		glDrawArrays(GL_TRIANGLES, 0, cubeVertexCount);
 
 		// Render the mesh into the stencil buffer.
